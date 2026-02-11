@@ -453,6 +453,14 @@
             margin-bottom: 1.5rem;
         }
 
+        .modal-iframe {
+            width: 100%;
+            height: 500px;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+
         .modal-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 2rem;
@@ -523,6 +531,10 @@
 
             .section-title {
                 font-size: 2rem;
+            }
+
+            .modal-iframe {
+                height: 300px;
             }
         }
     </style>
@@ -661,12 +673,12 @@
             },
             {
                 id: 8,
-                title: "Stylized Plant",
+                title: "Valorant Edit",
                 category: "editing",
-                type: "youtube",  // ← ganti ke youtube
-                youtube: "gPjg1jf9TRc",  // ← paste YouTube ID
+                type: "youtube",
+                youtube: "gPjg1jf9TRc",
                 thumbnail: "https://i.imgur.com/Mk7hBNA.png",
-                description: "Syilized Plant Animation"
+                description: "Edits"
             },
             {
                 id: 9,
@@ -798,8 +810,8 @@
                 : portfolioData.filter(item => item.category === filter);
 
             galleryGrid.innerHTML = filteredData.map(item => {
-                const imageSrc = item.type === 'video' ? item.thumbnail : item.image;
-                const videoIndicator = item.type === 'video' ? '<div class="video-indicator"></div>' : '';
+                const imageSrc = (item.type === 'video' || item.type === 'youtube') ? item.thumbnail : item.image;
+                const videoIndicator = (item.type === 'video' || item.type === 'youtube') ? '<div class="video-indicator"></div>' : '';
                 
                 return `
                     <div class="gallery-item" data-id="${item.id}" data-category="${item.category}">
@@ -836,13 +848,22 @@
             const item = portfolioData.find(i => i.id === id);
             if (item) {
                 const modalContent = document.querySelector('.modal-content');
-                const existingMedia = modalContent.querySelector('.modal-image, .modal-video');
+                const existingMedia = modalContent.querySelector('.modal-image, .modal-video, .modal-iframe');
                 
                 if (existingMedia) {
                     existingMedia.remove();
                 }
                 
-                if (item.type === 'video') {
+                if (item.type === 'youtube') {
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'modal-iframe';
+                    iframe.src = `https://www.youtube.com/embed/${item.youtube}?autoplay=1&loop=1&playlist=${item.youtube}`;
+                    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                    iframe.allowFullscreen = true;
+                    
+                    const closeBtn = modalContent.querySelector('.modal-close');
+                    closeBtn.after(iframe);
+                } else if (item.type === 'video') {
                     const video = document.createElement('video');
                     video.className = 'modal-video';
                     video.src = item.video;
@@ -874,10 +895,15 @@
         function closeModal() {
             const modal = document.getElementById('modal');
             const video = modal.querySelector('.modal-video');
+            const iframe = modal.querySelector('.modal-iframe');
             
             if (video) {
                 video.pause();
                 video.currentTime = 0;
+            }
+            
+            if (iframe) {
+                iframe.src = '';
             }
             
             modal.classList.remove('active');
