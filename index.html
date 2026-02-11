@@ -324,6 +324,38 @@
             transform: scale(1.05);
         }
 
+        /* Video indicator */
+        .video-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .video-indicator::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 20px solid var(--bg-dark);
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 5px;
+        }
+
+        .gallery-item:hover .video-indicator {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+        }
+
         .gallery-item-overlay {
             position: absolute;
             bottom: 0;
@@ -410,6 +442,13 @@
             width: 100%;
             max-height: 500px;
             object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-video {
+            width: 100%;
+            max-height: 500px;
             border-radius: 10px;
             margin-bottom: 1.5rem;
         }
@@ -541,7 +580,6 @@
     <div class="modal" id="modal">
         <div class="modal-content">
             <span class="modal-close" id="modalClose">&times;</span>
-            <img src="" alt="" class="modal-image" id="modalImage">
             <h3 class="modal-title" id="modalTitle"></h3>
             <p class="modal-description" id="modalDescription"></p>
         </div>
@@ -567,13 +605,15 @@
                 id: 1,
                 title: "Cyberpunk Character",
                 category: "character",
+                type: "image",
                 image: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
                 description: "Karakter cyberpunk dengan detail armor futuristik, dibuat dengan Blender dan textured di Substance Painter."
             },
             {
                 id: 2,
-                title: "Sci-Fi Environment",
+                title: "LineArt House",
                 category: "environment",
+                type: "image",
                 image: "https://i.imgur.com/lQT6mLX.png",
                 description: "Environment sci-fi dengan pencahayaan atmosferik yang dramatis. Render menggunakan Cycles engine."
             },
@@ -581,51 +621,69 @@
                 id: 3,
                 title: "Product Visualization",
                 category: "product",
+                type: "image",
                 image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=600&fit=crop",
                 description: "Product rendering dengan material realistic dan studio lighting setup yang profesional."
             },
             {
                 id: 4,
-                title: "Abstract Geometry",
-                category: "abstract",
-                image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&h=600&fit=crop",
-                description: "Komposisi geometris abstract dengan gradient material dan motion blur effects."
+                title: "3D Animation Demo",
+                category: "character",
+                type: "video",
+                video: "video1.mp4",
+                thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&h=600&fit=crop",
+                description: "Character animation showcase dengan rigging dan motion capture data."
             },
             {
                 id: 5,
                 title: "Fantasy Character",
                 category: "character",
+                type: "image",
                 image: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&h=600&fit=crop",
                 description: "Character design fantasy dengan stylized proportions dan hand-painted textures."
             },
             {
                 id: 6,
-                title: "Urban Environment",
+                title: "Environment Flythrough",
                 category: "environment",
-                image: "https://i.imgur.com/lQT6mLX.png",
-                description: "Urban scene dengan detailed architecture dan atmospheric perspective yang kuat."
+                type: "video",
+                video: "video2.mp4",
+                thumbnail: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=800&h=600&fit=crop",
+                description: "Camera flythrough animation dari environment yang telah dibuat, menampilkan detail dan atmosphere."
             },
             {
                 id: 7,
                 title: "Luxury Watch",
                 category: "product",
+                type: "image",
                 image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&h=600&fit=crop",
                 description: "High-end product visualization dengan chrome materials dan studio lighting."
             },
             {
                 id: 8,
-                title: "Organic Abstract",
+                title: "Abstract Motion Graphics",
                 category: "abstract",
-                image: "https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=800&h=600&fit=crop",
-                description: "Organic forms dengan procedural materials dan fluid simulation."
+                type: "video",
+                video: "video3.mp4",
+                thumbnail: "https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=800&h=600&fit=crop",
+                description: "Motion graphics dengan procedural animation dan particle systems."
             },
             {
                 id: 9,
                 title: "Mech Robot",
                 category: "character",
+                type: "image",
                 image: "https://images.unsplash.com/photo-1614850715649-1d0106293bd1?w=800&h=600&fit=crop",
                 description: "Hard-surface modeling untuk mechanical character dengan detailed panel lines."
             }
+            {
+                id: 10,
+                title: "LineArt House",
+                category: "environment",
+                type: "image",
+                image: "https://i.imgur.com/nN27qkn.png",
+                description: "Environment sci-fi dengan pencahayaan atmosferik yang dramatis. Render menggunakan Cycles engine."
+            },
         ];
 
         // Render Gallery
@@ -635,15 +693,21 @@
                 ? portfolioData 
                 : portfolioData.filter(item => item.category === filter);
 
-            galleryGrid.innerHTML = filteredData.map(item => `
-                <div class="gallery-item" data-id="${item.id}" data-category="${item.category}">
-                    <img src="${item.image}" alt="${item.title}" class="gallery-item-image">
-                    <div class="gallery-item-overlay">
-                        <h3 class="gallery-item-title">${item.title}</h3>
-                        <p class="gallery-item-category">${item.category.toUpperCase()}</p>
+            galleryGrid.innerHTML = filteredData.map(item => {
+                const imageSrc = item.type === 'video' ? item.thumbnail : item.image;
+                const videoIndicator = item.type === 'video' ? '<div class="video-indicator"></div>' : '';
+                
+                return `
+                    <div class="gallery-item" data-id="${item.id}" data-category="${item.category}">
+                        <img src="${imageSrc}" alt="${item.title}" class="gallery-item-image">
+                        ${videoIndicator}
+                        <div class="gallery-item-overlay">
+                            <h3 class="gallery-item-title">${item.title}</h3>
+                            <p class="gallery-item-category">${item.category.toUpperCase()}</p>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             // Add click events to gallery items
             document.querySelectorAll('.gallery-item').forEach(item => {
@@ -667,7 +731,35 @@
         function openModal(id) {
             const item = portfolioData.find(i => i.id === id);
             if (item) {
-                document.getElementById('modalImage').src = item.image;
+                const modalContent = document.querySelector('.modal-content');
+                const existingMedia = modalContent.querySelector('.modal-image, .modal-video');
+                
+                if (existingMedia) {
+                    existingMedia.remove();
+                }
+                
+                if (item.type === 'video') {
+                    const video = document.createElement('video');
+                    video.className = 'modal-video';
+                    video.src = item.video;
+                    video.autoplay = true;
+                    video.loop = true;
+                    video.muted = true;
+                    video.controls = true;
+                    video.playsInline = true;
+                    
+                    const closeBtn = modalContent.querySelector('.modal-close');
+                    closeBtn.after(video);
+                } else {
+                    const img = document.createElement('img');
+                    img.className = 'modal-image';
+                    img.src = item.image;
+                    img.alt = item.title;
+                    
+                    const closeBtn = modalContent.querySelector('.modal-close');
+                    closeBtn.after(img);
+                }
+                
                 document.getElementById('modalTitle').textContent = item.title;
                 document.getElementById('modalDescription').textContent = item.description;
                 document.getElementById('modal').classList.add('active');
@@ -676,7 +768,15 @@
         }
 
         function closeModal() {
-            document.getElementById('modal').classList.remove('active');
+            const modal = document.getElementById('modal');
+            const video = modal.querySelector('.modal-video');
+            
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
+            }
+            
+            modal.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
 
